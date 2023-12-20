@@ -130,7 +130,51 @@ fn combine_map(
     a_to_b: (Vec<i64>, HashMap<i64, i64>),
     b_to_c: (Vec<i64>, HashMap<i64, i64>)) -> (Vec<i64>, HashMap<i64, i64>) {
 
-    // TODO worry about deduping.
+    let mut intervals = vec![i64::MIN, i64::MAX];
+    let mut dest_starts: HashMap<i64, i64> = HashMap::new();
+
+
+    println!("\n START");
+    for i in 0..(a_to_b.0).len() {
+        // Starts.
+        let a_start = (a_to_b.0)[i];
+        let b_start = (a_to_b.1).get(&a_start).unwrap();
+
+        // Calculate ends.
+        let mut a_end = a_start;
+        let mut b_end = a_end;
+        if i != (a_to_b.0).len() - 1 {
+            a_end = (a_to_b.0)[i + 1] - 1;
+            if i == 0 {
+                b_end = a_end;
+            } else {
+                b_end = (a_end - a_start) + b_start;
+            }
+        }
+
+        println!("a_start {} a_end {} b_start {} b_end {}", a_start, a_end, b_start, b_end);
+
+        //intervals.push(a_start);
+
+        let mut found = false;
+        for sub_b_start in &b_to_c.0 {
+            if sub_b_start >= b_start {
+                intervals.push(a_start);
+                dest_starts.insert(a_start, b_to_c.1[&sub_b_start]);
+
+
+                // TODO giving up, this feels theoeritcally possible but i give up.
+                // How do we update a_start?
+                // Like we need a new A start that we get from this B start?
+                a_start = ;
+            }
+
+            if sub_b_start >= &b_end {
+                break
+            }
+        }
+    }
+    /*
     let mut critical_points_b: HashSet<i64> = HashSet::new();
     for (_, b) in a_to_b.1.clone().into_iter() {
         critical_points_b.insert(b);
@@ -143,14 +187,40 @@ fn combine_map(
     for b in critical_points_b {
         println!("{}", b);
     }
-
     println!("DONE \n\n");
+     */
+
+    // INPUT
+
+    // A values
+    // [MIN, 0, 7, 11, 53, MAX]
+    // MIN->MIN 0->42 7->57 11->0 53->49 MAX->MAX
+
+    // B values
+    // [MIN, 18, 25, MAX]
+    // MIN->MIN 18->88 25->18 MAX->MAX
+
+    // STEP 1
+    
+    // A values
+    // [MIN, 0, 7, 11, 53, MAX]
+    // MIN->MIN 0->42 7->57 11->0 53->49 MAX->MAX
+
+
+    // Go from 42 to 42 + 7 in b_to_c. If we see this.
+
+    // Essentially we just need to rewrite a to b in terms of C.
+    // MIN->MIN
+    
+    
+    
 
     // we want to get critical_points_a now I think.
 
     // I think this is wrong. Need a little more juice.
-    
-    return b_to_c;
+
+    intervals.sort();
+    return (intervals, dest_starts);
 }
 
 fn parse_map(lines: &Vec<String>, map_name: &str) -> (Vec<i64>, HashMap<i64, i64>) {
