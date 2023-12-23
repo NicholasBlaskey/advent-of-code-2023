@@ -30,28 +30,63 @@ fn main() {
 
         m.insert(k.to_string(), (left_v.clone(), right_v.clone()));
 
-        println!("k {}", k);
         if k.chars().last().unwrap() == 'A' {
-            println!("pushing");
             positions.push(k.to_string());
         }
     }
 
-    let mut count = 0;
-    while !positions.clone().into_iter().all(|x| x.chars().last().unwrap() == 'Z') {
-        //println!("{:?}", positions);
-        //println!("ARRAY");
-        
-        let turn_left = turn_lefts[count % turn_lefts.len()];
-        for i in 0..(positions.len()) {
-            if turn_left {
-                positions[i] = (m.get(&positions[i]).unwrap().0).clone();
-            } else {
-                positions[i] = (m.get(&positions[i]).unwrap().1).clone();
+    let mut cycle_lengths: Vec<i64> = Vec::new();
+
+    for p in positions {
+        let mut first_done = false;
+        let mut cur_pos = p;
+        let mut count: usize = 0;
+        loop {
+            if cur_pos.chars().last().unwrap() == 'Z' {
+                if first_done {
+                    break
+                } else {
+                    cycle_lengths.push(count as i64);
+                }
+                first_done = true;
             }
+
+            let turn_left = turn_lefts[count % turn_lefts.len()];
+            if turn_left {
+                cur_pos = (m.get(&cur_pos).unwrap().0).clone();
+            } else {
+                cur_pos = (m.get(&cur_pos).unwrap().1).clone();
+            }
+
+            count += 1;
         }
-        count += 1;
     }
 
-    println!("{}", count);
+
+    cycle_lengths.sort();
+    loop {
+        if cycle_lengths.len() == 1 {
+            break;
+        }
+
+        let mut times = cycle_lengths[0];
+        loop {
+            if times % cycle_lengths[1] == 0 {
+                break;
+            }
+
+            times += cycle_lengths[0];
+        }
+
+        // TODO learn vec slicing.
+        let mut new_lengths: Vec<i64> = Vec::new();
+        for i in 2..(cycle_lengths.len()) {
+            new_lengths.push(cycle_lengths[i]);
+        }
+        new_lengths.push(times);
+
+        cycle_lengths = new_lengths;
+        cycle_lengths.sort();
+    }
+    println!("{}", cycle_lengths[0]);
 }
