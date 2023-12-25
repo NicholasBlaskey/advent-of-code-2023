@@ -1,3 +1,4 @@
+// taken from https://topaz.github.io/paste/#XQAAAQDrBAAAAAAAAAApj0BGg5FxsnVtuf36p4TsBPiq87tED9vIGZk9flQeV0ZbOEiHh3HJPDBEQ5vwW8Kg7tUbyzpTt2KGKbGmzYpRlUoeERKRkKDsgMzZsUlSFGAI/eSYvjPOTEy3J7iSg/oBFPLj/9S9tXDW4OAvuGpgz6D4jtx37lbZ4pLvjkByA+rWIPhkU2vh9qJzG8KuSIkn+uLYFJYKxI6WjRlTA33K+N5PAxnTph3YBya1koPdqbLcHiSQspmPS4k5aFL/xgyWRS5EEsauBHDVc8lhLhbBsnGd6aKEiH4rlLc6GtiOl8b4JfnI1OXNb9WRzkybCe4gpKhKKn8cqUrVNpVKwH29myuY9/xonKFF0b1pEKqNd6ylavDjX3rOo17PwAPnIH7emJxpJjgqJs5C/LCwaqFm4Gpy3OC56CIsjmFN7fFKXn6zzv0/qqFe9QWtYXuTWISSPe/cOu9kV8+k1XF7iVnLBcSiNlOvyGQWa1tPKtDDMoEkpLJYkC/x7HZfFOtocyVzAHcSO9Gkpyl8In7F1lnCZipIJpsOelnoFagGBLTOW9eLqPRMRGlxt4exV6Db1CEcgav5Uwr+G9bnOM2Ple1PPOAUXMhustAJo+snyXkjTd7o0MB9rKmC70eU+xJf2xWmlH1VFoKk4PCprbxl3D+Q/0E8eaJ0BzMdkTewRMGEg2/WgFbn4LDFObGqduyXn7TqE9irJswy0xe57KgFW/BwltvScyWw0brbhVjhzKH6xrSfwVa79IwdJkEDGjDbwPQsjH1e5PPtqm/XYEMa+xvnqK8wlIAe6IP1J1MMftpie0RRjqTR1JuihKKK0sEipMA01IGAy2dbV/OefLY1FBDVeI//fvTaAA==
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
@@ -44,15 +45,10 @@ fn main() {
 
     visited.insert((i, j));
     i -= 1; // this is for actual probleme TODO unhardcode this first step.
+    let s_valid = true;
 
-
-    //j += 1; // TODO unhardcode this first step.
-
-    let mut steps = 0;
     loop {
-        println!("{:?}", (i, j));
         visited.insert((i, j));
-        steps += 1;
 
         let north = (i-1, j);
         let south = (i+1, j);
@@ -60,7 +56,6 @@ fn main() {
         let west = (i, j-1);
         let east = (i, j+1);
 
-        println!("char {}", lines[i].chars().nth(j).unwrap());
         if lines[i].chars().nth(j).unwrap() == '|' {
             (i, j) = pick_between(&lines, &mut visited, north, south);
         } else if lines[i].chars().nth(j).unwrap() == '-' {
@@ -74,78 +69,9 @@ fn main() {
         } else if lines[i].chars().nth(j).unwrap() == 'F' {
             (i, j) = pick_between(&lines, &mut visited, south, east);
         } else if lines[i].chars().nth(j).unwrap() == '.' {
-            println!("BLEH BLEH");
         } else if lines[i].chars().nth(j).unwrap() == 'S' {
             break
         }
-    }
-
-    println!("visited {}", visited.len());
-
-
-    let mut inside: HashSet<(usize, usize)> = HashSet::new();
-    let mut outside: HashSet<(usize, usize)> = HashSet::new();
-
-    for k in 0..(lines.len()) {
-        for m in 0..(lines[k].len()) {
-            mark_inside(&lines, &visited, &mut inside, &mut outside, (k, m));
-        }
-    }
-
-    /*
-    i = 0;
-    for l in &lines {
-        j = 0;
-        for _ in l.chars() {
-            //println!("! {} {}", inside.len(), outside.len());
-            mark_inside(&lines, &visited, &mut inside, &mut outside, (i, j));
-            j += 1;
-        }
-        i += 1;
-    }
-     */
-
-    //println!("{:?}", inside);
-    println!("inside {}", inside.len());
-    println!("outside {}", outside.len());
-
-    println!("actual length {} {} {} gotten length {}", lines.len() * lines[0].len(),
-             lines.len(), lines[0].len(),
-             inside.len() + outside.len() + visited.len());
-
-    let mut sum = 0;
-    for k in 0..(lines.len()) {
-        for m in 0..(lines[k].len()) {
-            if visited.contains(&(k, m)) {
-                sum += 1;
-            }
-            if outside.contains(&(k, m)) {
-                sum += 1;
-            }
-            if inside.contains(&(k, m)) {
-                sum += 1;
-            }
-        }
-    }
-    println!("sum {}", sum);
-
-    i = 0;
-    for l in &lines {
-        j = 0;
-        for c in l.chars() {
-            if inside.contains(&(i, j)) {
-                print!("{}", "I");
-            } else {
-                if visited.contains(&(i, j)) {
-                    print!("{}", c);
-                } else {
-                    print!(" ");
-                }
-            }
-            j += 1;
-        }
-        println!("");
-        i += 1;
     }
 
     let mut count = 0;
@@ -154,9 +80,8 @@ fn main() {
         let mut parity = 0;
         j = 0;
         for c in l.chars() {
-            println!("{}", parity);
             if visited.contains(&(i, j)) {
-                if (c == '|' || c == 'J' || c == 'L' || c == 'S') {
+                if c == '|' || c == 'J' || c == 'L' || (c == 'S' && s_valid) {
                     parity += 1;
                 }
             } else {
@@ -172,100 +97,7 @@ fn main() {
     println!("{}", count);
 }
 
-fn mark_inside(lines: &Vec<String>, visited: &HashSet<(usize, usize)>, inside: &mut HashSet<(usize, usize)>, outside: &mut HashSet<(usize, usize)>, a: (usize, usize)) -> bool {
-    if inside.contains(&a) {
-        return true;
-    }
-    if outside.contains(&a) {
-        return true;
-    }
-    if visited.contains(&a) {
-        return true;
-    }
-
-    let mut point_block: HashSet<(usize, usize)> = HashSet::new();
-    let mut stack: Vec<(usize, usize)> = Vec::new();
-    let mut is_inside = true;
-
-    // 3, 4
-    //println!("NEW");
-    stack.push(a);
-    loop {
-        if stack.len() == 0 {
-            break;
-        }
-
-        // pop
-        let (i, j) = stack.pop().unwrap();
-        //println!("{} {} {} visiteed {}", i, j, is_inside, visited.contains(&(i, j)));
-
-        // add i, j to point block.
-        point_block.insert((i, j));
-
-        // if we are at a block, we are done.
-        if visited.contains(&(i, j)) {
-            continue;
-        }
-
-        // On the outside if we are on a border.
-        if i == 0 || i == (lines.len() - 1) {
-            is_inside = false;
-            continue;
-        }
-        if j == 0 || j == (lines[0].len() - 1) {
-            is_inside = false;
-            continue;
-        }
-
-        // Check north south east west.
-        let north = (i-1, j);
-        let south = (i+1, j);
-        let west = (i, j-1);
-        let east = (i, j+1);
-
-        if !point_block.contains(&north) {
-            stack.push(north);
-        }
-        if !point_block.contains(&south) {
-            stack.push(south);
-        }
-        if !point_block.contains(&east) {
-            stack.push(east);
-        }
-        if !point_block.contains(&west) {
-            stack.push(west);
-        }
-
-    }
-
-
-    for p in point_block {
-        if visited.contains(&p) {
-            continue;
-        }
-
-        if is_inside {
-            inside.insert(p);
-        } else {
-            outside.insert(p);
-        }
-    }
-
-
-    return false;
-}
-
 fn pick_between(lines: &Vec<String>, visited: &mut HashSet<(usize, usize)>, a: (usize, usize), b: (usize, usize)) -> (usize, usize) {
-    if visited.contains(&a) && visited.contains(&b) {
-        println!("tupes {:?} {:?}", a, b);
-        println!("CHARS {} {}", lines[a.0].chars().nth(a.1).unwrap(),
-                 lines[b.0].chars().nth(b.1).unwrap(),
-        );
-        
-        //panic!("NOT POSSIBLE");
-    }
-    //println!("VISITED contians {} {}", );
-    
     if visited.contains(&a) {
         return b;
     } else if visited.contains(&b) {
